@@ -1,0 +1,145 @@
+---
+export interface Props {
+	title: string;
+}
+
+const { title } = Astro.props as Props;
+
+const themes = [
+	"light",
+	"dark",
+	"cupcake",
+	"bumblebee",
+	"emerald",
+	"corporate",
+	"synthwave",
+	"retro",
+	"cyberpunk",
+	"valentine",
+	"halloween",
+	"garden",
+	"forest",
+	"aqua",
+	"lofi",
+	"pastel",
+	"fantasy",
+	"wireframe",
+	"black",
+	"luxury",
+	"dracula",
+	"cmyk",
+	"autumn",
+	"business",
+	"acid",
+	"lemonade",
+	"night",
+	"coffee",
+	"winter",
+];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+		/>
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body class="drawer">
+		<input id="drawer" type="checkbox" class="drawer-toggle" />
+		<div class="drawer-content">
+			<label
+				for="drawer"
+				class="drawer-button fixed bottom-7 right-7 btn btn-circle z-10"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-5 w-5"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z"
+						clip-rule="evenodd"></path>
+				</svg>
+			</label>
+			<main class="container mx-auto p-5 space-y-5">
+				<slot />
+			</main>
+		</div>
+		<div class="drawer-side">
+			<label for="drawer" class="drawer-overlay"></label>
+			<ul class="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
+				{
+					themes.map((theme) => (
+						<li id={theme}>
+							<a>{theme}</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+		<script>
+			const html = document.documentElement;
+
+			const themes = [
+				"light",
+				"dark",
+				"cupcake",
+				"bumblebee",
+				"emerald",
+				"corporate",
+				"synthwave",
+				"retro",
+				"cyberpunk",
+				"valentine",
+				"halloween",
+				"garden",
+				"forest",
+				"aqua",
+				"lofi",
+				"pastel",
+				"fantasy",
+				"wireframe",
+				"black",
+				"luxury",
+				"dracula",
+				"cmyk",
+				"autumn",
+				"business",
+				"acid",
+				"lemonade",
+				"night",
+				"coffee",
+				"winter",
+			];
+
+			const setTheme = (theme: string) => {
+				localStorage.setItem("theme", theme);
+
+				html.removeAttribute("data-theme");
+				html.setAttribute("data-theme", theme);
+			};
+
+			const lsTheme = localStorage.getItem("theme");
+
+			if (typeof lsTheme === "string") {
+				setTheme(lsTheme);
+			}
+
+			themes.forEach((theme) => {
+				const el = document.getElementById(theme);
+
+				el?.addEventListener("click", () => {
+					setTheme(theme);
+				});
+			});
+		</script>
+	</body>
+</html>

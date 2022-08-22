@@ -111,7 +111,7 @@ import Layout from "../layouts/Layout.astro";
 		button.classList.add("btn");
 		button.classList.add("btn-primary");
 		button.innerText = "View";
-		button.href = `/${"movie"}/${movie.id}`;
+		button.href = `/${movie.media_type}/${movie.id}`;
 		actions.appendChild(button);
 
 		return card;

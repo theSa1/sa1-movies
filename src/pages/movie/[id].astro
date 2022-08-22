@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import type { Movie } from "../../types/movie";
 
 const res = await fetch(
   `https://api.themoviedb.org/3/movie/${Astro.params.id}?api_key=${
@@ -9,43 +10,7 @@ const res = await fetch(
 
 console.log(res.url);
 
-const movie = (await res.json()) as {
-  adult: boolean;
-  backdrop_path?: string;
-  belongs_to_collection?: {
-    id: number;
-    name: string;
-    poster_path?: string;
-    backdrop_path?: string;
-  };
-  budget: number;
-  genres: { id: number; name: string }[];
-  homepage: string;
-  id: number;
-  imdb_id: string;
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path?: string;
-  production_companies: {
-    id: number;
-    name: string;
-    logo_path?: string;
-    origin_country: string;
-  }[];
-  production_countries: { iso_3166_1: string; name: string }[];
-  release_date: string;
-  revenue: number;
-  runtime: number;
-  spoken_languages: { english_name: string; iso_639_1: string; name: string }[];
-  status: string;
-  tagline: string;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-};
+const movie = (await res.json()) as Movie;
 
 movie.poster_path = movie.poster_path
   ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`

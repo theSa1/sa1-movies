@@ -34,6 +34,45 @@ export type Movie = {
   video: boolean;
   vote_average: number;
   vote_count: number;
+  "watch/providers": {
+    results: {
+      [countryCode: string]: {
+        link: string;
+        flatrate?: {
+          logo_path: string;
+          provider_id: number;
+          provider_name: string;
+          display_priority: number;
+        }[];
+        rent?: {
+          logo_path: string;
+          provider_id: number;
+          provider_name: string;
+          display_priority: number;
+        }[];
+        buy?: {
+          logo_path: string;
+          provider_id: number;
+          provider_name: string;
+          display_priority: number;
+        }[];
+      };
+    };
+  };
+  videos: {
+    results: {
+      iso_639_1: string;
+      iso_3166_1: string;
+      name: string;
+      key: string;
+      site: string;
+      size: number;
+      type: string;
+      official: boolean;
+      published_at: string;
+      id: string;
+    }[];
+  };
 };
 
 export type MovieResult = {

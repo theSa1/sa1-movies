@@ -5,10 +5,8 @@ import type { Movie } from "../../types/movie";
 const res = await fetch(
   `https://api.themoviedb.org/3/movie/${Astro.params.id}?api_key=${
     import.meta.env.PUBLIC_TMDB_API
-  }`
+  }&append_to_response=watch/providers,videos`
 );
-
-console.log(res.url);
 
 const movie = (await res.json()) as Movie;
 
@@ -18,9 +16,139 @@ movie.poster_path = movie.poster_path
 movie.backdrop_path = movie.backdrop_path
   ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
   : undefined;
+
+const languageNames = new Intl.DisplayNames(["en"], {
+  type: "language",
+});
+
+const directSearchProviders = [
+  {
+    name: "HD Today",
+    link: "https://hdtoday.cc/search/" + movie.title.replaceAll(" ", "-"),
+  },
+  {
+    name: "Soap2Day",
+    link: `https://soap2day.sh/search/keyword/${encodeURI(movie.title)}`,
+  },
+  {
+    name: "Kat Movies HD",
+    link: `https://katmoviehd.cx/?s=${encodeURI(movie.title)}`,
+  },
+  {
+    name: "All Movies Hub",
+    link: `https://allmovieshub.guru/?s=${encodeURI(movie.title)}`,
+  },
+  {
+    name: "The Movies Flix",
+    link: `https://themoviesflix.ac/?s=${encodeURI(movie.title)}`,
+  },
+  {
+    name: "Vega Movies",
+    link: `https://vegamovies.rest/?s=${encodeURI(movie.title)}`,
+  },
+  {
+    name: "2Embed Download",
+    link: `https://2embed.org/download/${movie.id}`,
+  },
+  {
+    name: "2Embed",
+    link: `https://www.2embed.to/embed/tmdb/movie?id=${movie.id}`,
+  },
+  {
+    name: "2Embed.org",
+    link: `https://2embed.org/embed/${movie.id}`,
+  },
+  {
+    name: "VidSrc",
+    link: `https://vidsrc.me/embed/${movie.id}`,
+  },
+];
+
+const getMovieTrailer = (
+  videos: {
+    type: string;
+    official: boolean;
+    site: string;
+    key: string;
+  }[]
+) => {
+  const trailers = videos.filter(
+    (video) =>
+      video.type === "Trailer" &&
+      video.official === true &&
+      video.site === "YouTube"
+  );
+
+  if (trailers.length <= 0) {
+    return null;
+  }
+
+  return trailers[trailers.length - 1].key;
+};
+
+const trailer = getMovieTrailer(movie.videos.results);
 ---
 
-<Layout title="Hello">
+<Layout title={`${movie.title} | Sa1 Movies`}>
+  <div>
+    <div
+      class="absolute top-0 left-0 h-screen w-screen bg-black bg-opacity-80 z-20 hidden"
+      id="trailer-player"
+    >
+      <button
+        class="absolute top-5 right-5 font-mono btn btn-circle"
+        id="trailer-close-btn"
+        ><svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <iframe
+        src={`https://www.youtube.com/embed/${trailer}`}
+        class="w-full h-full"
+        title="YouTube video player"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+    </div>
+    <div
+      class="absolute top-0 left-0 h-screen w-screen bg-black bg-opacity-80 z-20 hidden mt-0"
+      id="movie-player"
+    >
+      <button
+        class="absolute top-5 right-5 font-mono btn btn-circle"
+        id="movie-close-btn"
+        ><svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <iframe
+        src={`https://www.2embed.to/embed/tmdb/movie?id=${movie.id}`}
+        class="w-full h-full"
+        title="YouTube video player"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+    </div>
+  </div>
+
   <div class="grid place-items-center">
     <a href="/" class="font-semibold text-xl link">Home</a>
   </div>
@@ -58,10 +186,71 @@ movie.backdrop_path = movie.backdrop_path
     <div class="card bg-base-200 lg:col-span-2">
       <div class="card-body">
         <div class="card-title">Where To Watch</div>
+        {
+          movie["watch/providers"].results["IN"].flatrate && (
+            <p class="mt-2">Stream</p>
+          )
+        }
+        <div class="gap-2 flex">
+          {
+            movie["watch/providers"].results["IN"].flatrate?.map((provider) => (
+              <img
+                src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                class="w-10 rounded"
+              />
+            ))
+          }
+        </div>
+        {
+          movie["watch/providers"].results["IN"].rent && (
+            <p class="mt-2">Rent</p>
+          )
+        }
+        <div class="gap-2 flex">
+          {
+            movie["watch/providers"].results["IN"].rent?.map((provider) => (
+              <img
+                src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                class="w-10 rounded"
+              />
+            ))
+          }
+        </div>
+        {movie["watch/providers"].results["IN"].buy && <p class="mt-2">Buy</p>}
+        <div class="gap-2 flex">
+          {
+            movie["watch/providers"].results["IN"].buy?.map((provider) => (
+              <img
+                src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                class="w-10 rounded"
+              />
+            ))
+          }
+        </div>
+
+        <div class="space-y-2">
+          {
+            directSearchProviders.map((provider) => (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={provider.link}
+                class="px-2 py-1 rounded bg-base-300 mr-3 inline-block"
+              >
+                {provider.name}
+              </a>
+            ))
+          }
+        </div>
+
         <div class="card-actions justify-end">
           <div class="btn-group">
-            <button class="btn btn-primary">Watch Now</button>
-            <button class="btn btn-outline">Play Trailers</button>
+            <button id="movie-open-btn" class="btn btn-primary"
+              >Watch Now</button
+            >
+            <button id="trailer-open-btn" class="btn btn-outline"
+              >Play Trailers</button
+            >
           </div>
         </div>
       </div>
@@ -86,7 +275,7 @@ movie.backdrop_path = movie.backdrop_path
         </svg>
       </div>
       <div class="stat-title">Revenue</div>
-      <div class="stat-value text-primary">{movie.revenue}</div>
+      <div class="stat-value text-primary">{movie.revenue || "-"}</div>
     </div>
     <div class="stat">
       <div class="stat-figure text-primary">
@@ -105,7 +294,7 @@ movie.backdrop_path = movie.backdrop_path
           ></path>
         </svg>
       </div>
-      <div class="stat-value text-primary">{movie.budget}</div>
+      <div class="stat-value text-primary">{movie.budget || "-"}</div>
       <div class="stat-title">Budget</div>
     </div>
     <div class="stat">
@@ -129,7 +318,7 @@ movie.backdrop_path = movie.backdrop_path
             clip-rule="evenodd"></path>
         </svg>
       </div>
-      <div class="stat-value">{movie.original_language}</div>
+      <div class="stat-value">{languageNames.of(movie.original_language)}</div>
       <div class="stat-title">Original Language</div>
     </div>
     <div class="stat">
@@ -146,7 +335,7 @@ movie.backdrop_path = movie.backdrop_path
         </svg>
       </div>
       <div class="stat-title">Rating</div>
-      <div class="stat-value text-success">8.9</div>
+      <div class="stat-value text-success">{movie.vote_average || "-"}</div>
     </div>
     <div class="stat">
       <div class="stat-figure text-success">
@@ -162,8 +351,38 @@ movie.backdrop_path = movie.backdrop_path
             clip-rule="evenodd"></path>
         </svg>
       </div>
-      <div class="stat-value text-success">{movie.runtime}</div>
+      <div class="stat-value text-success">{movie.runtime || "-"}</div>
       <div class="stat-title">Runtime</div>
     </div>
   </div>
 </Layout>
+
+<script>
+  const movieOpenBtn = document.getElementById("movie-open-btn");
+  const moviePlayer = document.getElementById("movie-player");
+  const movieCloseBtn = document.getElementById("movie-close-btn");
+
+  movieOpenBtn?.addEventListener("click", () => {
+    console.log("Open");
+    moviePlayer?.classList.remove("hidden");
+  });
+
+  movieCloseBtn?.addEventListener("click", () => {
+    console.log("Close");
+    moviePlayer?.classList.add("hidden");
+  });
+
+  const trailerOpenBtn = document.getElementById("trailer-open-btn");
+  const trailerCloseBtn = document.getElementById("trailer-close-btn");
+  const trailerPlayer = document.getElementById("trailer-player");
+
+  trailerOpenBtn?.addEventListener("click", () => {
+    console.log("Open");
+    trailerPlayer?.classList.remove("hidden");
+  });
+
+  trailerCloseBtn?.addEventListener("click", () => {
+    console.log("Close");
+    trailerPlayer?.classList.add("hidden");
+  });
+</script>

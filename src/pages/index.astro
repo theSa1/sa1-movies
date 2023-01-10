@@ -3,117 +3,115 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Sa1 Movies">
-	<div class="flex flex-col items-center">
-		<!-- <Home client:load /> -->
-		<div class="space-y-5 w-full sm:w-[35rem]">
-			<input
-				type="text"
-				placeholder="Start Typing To Search..."
-				class="input w-full bg-base-200"
-				id="search-input"
-			/>
-			<div class="space-y-5" id="results"></div>
-		</div>
-	</div>
+  <div class="flex flex-col items-center">
+    <!-- <Home client:load /> -->
+    <div class="space-y-5 w-full sm:w-[35rem]">
+      <input
+        type="text"
+        placeholder="Start Typing To Search..."
+        class="input w-full bg-base-200"
+        id="search-input"
+      />
+      <div class="space-y-5" id="results"></div>
+    </div>
+  </div>
 </Layout>
 
 <script>
-	import { debounce } from "underscore";
-	import type { MovieResult, MovieResults } from "../types/movie";
+  import { debounce } from "underscore";
+  import type { MovieResult, MovieResults } from "../types/movie";
 
-	const searchInput = document.getElementById(
-		"search-input"
-	) as HTMLInputElement;
+  const searchInput = document.getElementById(
+    "search-input"
+  ) as HTMLInputElement;
 
-	const resultsEl = document.getElementById("results");
+  const resultsEl = document.getElementById("results");
 
-	searchInput?.addEventListener("input", () => update());
+  searchInput?.addEventListener("input", () => update());
 
-	const update = debounce(() => search(searchInput.value), 300);
+  const update = debounce(() => search(searchInput.value), 300);
 
-	const search = async (query?: string) => {
-		if (!query) return;
+  const search = async (query?: string) => {
+    if (!query) return;
 
-		if (resultsEl === null) return;
+    if (resultsEl === null) return;
 
-		const res = await fetch(
-			`https://api.themoviedb.org/3/search/multi?api_key=${
-				import.meta.env.PUBLIC_TMDB_API
-			}&language=en-US&query=${query}&page=1&include_adult=true`
-		);
+    const res = await fetch(
+      `https://api.themoviedb.org/3/search/multi?api_key=${
+        import.meta.env.PUBLIC_TMDB_API
+      }&language=en-US&query=${query}&page=1&include_adult=true`
+    );
 
-		const data = (await res.json()) as MovieResults;
+    const data = (await res.json()) as MovieResults;
 
-		resultsEl.innerHTML = "";
+    resultsEl.innerHTML = "";
 
-		data.results
-			.filter(
-				(movie) => movie.media_type === "movie" || movie.media_type === "tv"
-			)
-			.forEach((movie) => {
-				const movieEl = addResult(movie);
+    data.results
+      .filter((movie) => movie.media_type === "movie")
+      .forEach((movie) => {
+        const movieEl = addResult(movie);
 
-				resultsEl.appendChild(movieEl);
-			});
-	};
+        resultsEl.appendChild(movieEl);
+      });
+  };
 
-	const addResult = (movie: MovieResult) => {
-		const card = document.createElement("div");
-		card.classList.add("card");
-		card.classList.add("card-side");
-		card.classList.add("card-compact");
-		card.classList.add("bg-base-200");
-		card.classList.add("shadow-xl");
-		card.classList.add("h-52");
+  const addResult = (movie: MovieResult) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.classList.add("card-side");
+    card.classList.add("card-compact");
+    card.classList.add("bg-base-200");
+    card.classList.add("shadow-xl");
+    card.classList.add("h-52");
 
-		if (movie.poster_path) {
-			const img = document.createElement("img");
-			img.src = `https://image.tmdb.org/t/p/w500/${movie.poster_path}`;
-			img.alt = `${movie.title} Poster`;
-			card.appendChild(img);
-		}
+    if (movie.poster_path) {
+      const img = document.createElement("img");
+      img.src = `https://image.tmdb.org/t/p/w500/${movie.poster_path}`;
+      img.alt = `${movie.title} Poster`;
+      card.appendChild(img);
+    }
 
-		const body = document.createElement("div");
-		body.classList.add("card-body");
-		card.appendChild(body);
+    const body = document.createElement("div");
+    body.classList.add("card-body");
+    card.appendChild(body);
 
-		const title = document.createElement("h2");
-		title.classList.add("card-title");
-		title.innerText = movie.title;
-		body.appendChild(title);
+    const title = document.createElement("h2");
+    title.classList.add("card-title");
+    title.innerText = movie.title;
+    body.appendChild(title);
 
-		const releaseDate = document.createElement("p");
-		releaseDate.innerText = movie.release_date;
-		body.appendChild(releaseDate);
+    const releaseDate = document.createElement("p");
+    releaseDate.innerText = movie.release_date;
+    body.appendChild(releaseDate);
 
-		if (movie.vote_average !== 0) {
-			const ratingContainer = document.createElement("div");
-			ratingContainer.classList.add("flex");
-			ratingContainer.classList.add("items-center");
-			body.appendChild(ratingContainer);
+    if (movie.vote_average !== 0) {
+      const ratingContainer = document.createElement("div");
+      ratingContainer.classList.add("flex");
+      ratingContainer.classList.add("items-center");
+      body.appendChild(ratingContainer);
 
-			// const ratingIcon = document.createElement("div");
-			ratingContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>`;
-			// ratingContainer.appendChild(ratingIcon);
+      // const ratingIcon = document.createElement("div");
+      ratingContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>`;
+      // ratingContainer.appendChild(ratingIcon);
 
-			const rating = document.createElement("p");
-			rating.classList.add("ml-1");
-			rating.innerText = `${movie.vote_average}/10`;
-			ratingContainer.appendChild(rating);
-		}
+      const rating = document.createElement("p");
+      rating.classList.add("ml-1");
+      rating.innerText = `${movie.vote_average}/10`;
+      ratingContainer.appendChild(rating);
+    }
 
-		const actions = document.createElement("div");
-		actions.classList.add("card-actions");
-		actions.classList.add("justify-end");
-		body.appendChild(actions);
+    const actions = document.createElement("div");
+    actions.classList.add("card-actions");
+    actions.classList.add("justify-end");
+    body.appendChild(actions);
 
-		const button = document.createElement("a");
-		button.classList.add("btn");
-		button.classList.add("btn-primary");
-		button.innerText = "View";
-		button.href = `/${movie.media_type}/${movie.id}`;
-		actions.appendChild(button);
+    const button = document.createElement("a");
+    button.classList.add("btn");
+    button.classList.add("btn-primary");
+    button.innerText = "View";
+    button.href = `/${movie.media_type}/${movie.id}`;
+    actions.appendChild(button);
 
-		return card;
-	};
+    return card;
+  };
 </script>

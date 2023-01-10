@@ -8,6 +8,8 @@ const res = await fetch(
   }&append_to_response=watch/providers,videos`
 );
 
+console.log(res.url);
+
 const movie = (await res.json()) as Movie;
 
 movie.poster_path = movie.poster_path
@@ -87,6 +89,30 @@ const getMovieTrailer = (
 };
 
 const trailer = getMovieTrailer(movie.videos.results);
+
+const nFormatter = (num: number) => {
+  const lookup = [
+    { value: 1, symbol: "" },
+    { value: 1e3, symbol: "k" },
+    { value: 1e6, symbol: "M" },
+    { value: 1e12, symbol: "T" },
+    { value: 1e15, symbol: "P" },
+    { value: 1e18, symbol: "E" },
+  ];
+
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+  var item = lookup
+    .slice()
+    .reverse()
+    .find(function (item) {
+      return num >= item.value;
+    });
+
+  return item
+    ? (num / item.value).toFixed(1).replace(rx, "$1") + item.symbol
+    : "0";
+};
 ---
 
 <Layout title={`${movie.title} | Sa1 Movies`}>
@@ -187,28 +213,30 @@ const trailer = getMovieTrailer(movie.videos.results);
       <div class="card-body">
         <div class="card-title">Where To Watch</div>
         {
-          movie["watch/providers"].results["IN"].flatrate && (
+          movie["watch/providers"].results["IN"]?.flatrate && (
             <p class="mt-2">Stream</p>
           )
         }
         <div class="gap-2 flex">
           {
-            movie["watch/providers"].results["IN"].flatrate?.map((provider) => (
-              <img
-                src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
-                class="w-10 rounded"
-              />
-            ))
+            movie["watch/providers"].results["IN"]?.flatrate?.map(
+              (provider) => (
+                <img
+                  src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                  class="w-10 rounded"
+                />
+              )
+            )
           }
         </div>
         {
-          movie["watch/providers"].results["IN"].rent && (
+          movie["watch/providers"].results["IN"]?.rent && (
             <p class="mt-2">Rent</p>
           )
         }
         <div class="gap-2 flex">
           {
-            movie["watch/providers"].results["IN"].rent?.map((provider) => (
+            movie["watch/providers"].results["IN"]?.rent?.map((provider) => (
               <img
                 src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
                 class="w-10 rounded"
@@ -216,10 +244,10 @@ const trailer = getMovieTrailer(movie.videos.results);
             ))
           }
         </div>
-        {movie["watch/providers"].results["IN"].buy && <p class="mt-2">Buy</p>}
+        {movie["watch/providers"].results["IN"]?.buy && <p class="mt-2">Buy</p>}
         <div class="gap-2 flex">
           {
-            movie["watch/providers"].results["IN"].buy?.map((provider) => (
+            movie["watch/providers"].results["IN"]?.buy?.map((provider) => (
               <img
                 src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
                 class="w-10 rounded"
@@ -275,7 +303,9 @@ const trailer = getMovieTrailer(movie.videos.results);
         </svg>
       </div>
       <div class="stat-title">Revenue</div>
-      <div class="stat-value text-primary">{movie.revenue || "-"}</div>
+      <div class="stat-value text-primary">
+        {movie.revenue ? nFormatter(movie.revenue) : "-"}
+      </div>
     </div>
     <div class="stat">
       <div class="stat-figure text-primary">
@@ -294,7 +324,9 @@ const trailer = getMovieTrailer(movie.videos.results);
           ></path>
         </svg>
       </div>
-      <div class="stat-value text-primary">{movie.budget || "-"}</div>
+      <div class="stat-value text-primary">
+        {movie.budget ? nFormatter(movie.budget) : "-"}
+      </div>
       <div class="stat-title">Budget</div>
     </div>
     <div class="stat">

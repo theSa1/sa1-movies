@@ -36,7 +36,7 @@ export type Movie = {
   vote_count: number;
   "watch/providers": {
     results: {
-      [countryCode: string]: {
+      IN?: {
         link: string;
         flatrate?: {
           logo_path: string;
